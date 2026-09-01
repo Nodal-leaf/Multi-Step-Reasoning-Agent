@@ -70,6 +70,57 @@ echo "Explain recursion to a 10 year old" | python agent.py
 | `-i, --interactive` | Run an interactive REPL |
 | `--no-color` | Disable ANSI colors |
 
+## Running with Docker
+
+No local Python or Ollama installation needed — `docker-compose` runs the agent alongside the official Ollama image, and the entrypoint script pulls the default model (`qwen3:8b`) automatically on first start.
+
+### Requirements
+
+- [Docker](https://www.docker.com/products/docker-desktop/) with Compose (included in Docker Desktop)
+
+### Start
+
+```bash
+docker compose up --build
+```
+
+On first start the Ollama container downloads `qwen3:8b`; this is cached in the `ollama_data` volume so it only happens once. The HTTP server is also exposed on `localhost:11434`.
+
+### One-off question
+
+```bash
+docker compose run --rm agent "What is the capital of France?"
+```
+
+### Show the reasoning trace
+
+```bash
+docker compose run --rm agent -t "Why is the sky blue?"
+```
+
+### Interactive REPL
+
+```bash
+docker compose run --rm agent -i
+```
+
+The agent connects to Ollama over the internal Docker network automatically, so no `--host` flag is needed.
+
+### Using a different model
+
+Set the `MODEL` environment variable in `docker-compose.yml` (e.g. `MODEL: "qwen3:10b"`) and rebuild/restart:
+
+```bash
+docker compose up --build -d ollama
+docker compose run --rm agent --model qwen3:10b "Your question"
+```
+
+### Manual model pull (optional)
+
+```bash
+docker exec -it ollama ollama pull qwen3:8b
+```
+
 ## How it works
 
 1. **Plan** – the question is broken down into ordered sub-problems.
